@@ -1,0 +1,213 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ultrasonido 2 🦇 Estudio de sonidos secretos</title>
+<style>
+body{font-family:system-ui,sans-serif;background:linear-gradient(#ffe4f1,#fff);margin:0;color:#5a2a48}
+main{max-width:760px;margin:auto;padding:16px}h1{text-align:center;color:#d6338a;margin-bottom:4px}
+.card{background:#fff;border-radius:18px;padding:14px;margin:12px 0;box-shadow:0 4px 14px #f5a3c955}
+button{background:#e64c9c;color:#fff;border:0;border-radius:24px;padding:11px 16px;font-size:16px;margin:6px 4px 0 0;cursor:pointer}
+button.alt{background:#a66cd6}button.mini{padding:4px 10px;font-size:14px;margin:2px}button:disabled{opacity:.4}
+.aviso{background:#fff0f7;border:2px dashed #e64c9c;border-radius:14px;padding:12px;font-size:15px}
+.tip{background:#fdf2ff;border-left:5px solid #a66cd6;border-radius:8px;padding:8px 10px;font-size:14px;margin:6px 0 10px}
+input[type=range]{width:100%;accent-color:#e64c9c}label{display:block;margin:8px 0 2px;font-weight:600}
+select,input[type=text],input[type=number]{font-size:16px;border:2px solid #f7b6d6;border-radius:10px;padding:6px}
+input[type=text]{width:100%;box-sizing:border-box}
+#tabs{display:flex;flex-wrap:wrap;gap:4px;justify-content:center}
+#tabs button{background:#f7c6df;color:#5a2a48}#tabs button.on{background:#e64c9c;color:#fff}
+section{display:none}section.on{display:block}
+#st{font-weight:bold;color:#d6338a;min-height:22px;margin:8px 0}
+.grid{display:grid;grid-template-columns:60px repeat(16,1fr);gap:3px;align-items:center;font-size:13px}
+.cell{height:26px;border-radius:6px;background:#fbe1ee;cursor:pointer;border:0;padding:0;margin:0}
+.cell.b{background:#f4cce0}.cell.on{background:#e64c9c}
+#fx li{margin:4px 0}canvas{width:100%;background:#2a0f22;border-radius:12px}
+.chk{font-weight:600;display:inline-flex;gap:6px;align-items:center;margin:4px 12px 4px 0}
+small{color:#8a5a78}
+</style></head><body><main>
+<h1>🦇 Ultrasonido 2</h1>
+<p style="text-align:center;margin-top:0">Tu estudio de sonidos secretos: ritmos, efectos, sonidos agudísimos y mensajes escondidos que solo se ven en el espectrograma ✨<br><small><a href="../">← volver a la versión 1</a></small></p>
+<div class="aviso">💡 <b>Ojo, la neta:</b> el ultrasonido "de verdad" empieza arriba de 20 kHz. Casi todas las bocinas y micrófonos de celular o laptop llegan más o menos a 20 kHz, y el audio digital a 48 000 Hz solo alcanza hasta 24 kHz. Así que esto hace sonido <b>casi ultrasónico</b> (agudísimo, apenas se oye), no ultrasonido de laboratorio.<br>
+🔈 <b>Bájale al volumen</b> antes de darle play: lo agudo puede molestar (y a los perritos 🐶 también).</div>
+<div id="tabs"></div>
+
+<section data-t="🎧 Tu audio"><div class="card">
+<div class="tip">¿Qué hace esto? Aquí eliges el audio con el que vas a jugar. Puede ser un archivo, una grabación tuya o un audio de prueba.</div>
+<input type="file" id="f" accept="audio/*"><br>
+<button class="alt" id="rec">🎙️ Grabar</button><button class="alt" id="demo">🧪 Audio de prueba</button><button id="playO" disabled>▶️ Oír original</button>
+<p><small>Si no cargas nada, igual puedes hacer un mensaje oculto solito en la pestaña 💌.</small></p></div></section>
+
+<section data-t="🎛️ Efectos"><div class="card">
+<div class="tip">¿Qué hace esto? Le pone efectos a tu audio, uno tras otro, en el orden de la lista (de arriba hacia abajo).</div>
+<span class="chk"><input type="checkbox" id="useFx" checked> Usar efectos</span><br>
+<select id="fxSel"><option value="robot">🤖 Robot</option><option value="reverse">🔄 Al revés</option><option value="echo">🏔️ Eco</option><option value="crush">👾 Videojuego (bitcrusher)</option><option value="speed">⏩ Velocidad / tono</option></select>
+<button class="mini" id="fxAdd">➕ Agregar</button><ol id="fx"></ol>
+<small>Robot: qué tan metálico (Hz). Eco: tiempo y repeticiones. Videojuego: qué tan pixeleado. Velocidad: 0.5 = lento y grave, 2 = rápido y agudo.</small></div></section>
+
+<section data-t="🥁 Ritmo"><div class="card">
+<div class="tip">¿Qué hace esto? Convierte tu audio en pulsos que se prenden y apagan al ritmo que elijas, y si quieres le pone una batería abajo.</div>
+<span class="chk"><input type="checkbox" id="useGate"> Cortar en pulsos</span>
+<label>Velocidad: <b id="bpmV">120</b> BPM (golpes por minuto)</label><input type="range" id="bpm" min="60" max="180" value="120">
+<label>Patrón</label><select id="pat"><option value="44">4/4 (uno, dos, tres, cuatro)</option><option value="8">Corcheas (más rapidito)</option><option value="tresillo">Tresillo (latino, como reggaetón)</option><option value="morse">Tipo morse (largo-corto)</option><option value="random">Al azar 🎲</option><option value="picos">En los golpes de tu audio</option></select>
+<label>Qué tanto dura prendido cada pulso: <b id="dutyV">50</b>%</label><input type="range" id="duty" min="10" max="95" value="50">
+<span class="chk"><input type="checkbox" id="useTrem"> Tremolo (sube y baja el volumen)</span> <small>vel.</small> <input type="number" id="tremR" value="6" min="1" max="30" style="width:60px"> Hz
+<span class="chk"><input type="checkbox" id="useChop"> Picadito (revuelve pedacitos)</span> <small>pedazos de</small> <input type="number" id="chopMs" value="125" min="30" max="1000" style="width:70px"> ms
+<hr style="border:1px dashed #f7b6d6">
+<span class="chk"><input type="checkbox" id="useBeat"> Batería debajo de tu audio</span>
+<span class="chk"><input type="checkbox" id="beatPeaks"> Bombo extra en los golpes de tu audio</span>
+<label>Volumen de la batería: <b id="bvolV">60</b>%</label><input type="range" id="bvol" min="0" max="100" value="60">
+<p><small>Toca los cuadritos para prender o apagar cada golpe (16 pasos = 1 compás):</small></p><div class="grid" id="grid"></div>
+<button class="mini alt" id="beatPlay">▶️ Oír la batería sola</button></div></section>
+
+<section data-t="🦇 Ultrasonido"><div class="card">
+<div class="tip">¿Qué hace esto? Sube todo tu sonido hacia lo súper agudo, donde casi no se oye, pero el espectrograma sí lo ve.</div>
+<span class="chk"><input type="checkbox" id="useShift" checked> Subir a ultrasonido</span><br>
+<button class="mini" data-p="18">🤫 Casi inaudible 18k</button><button class="mini" data-p="16">🔔 Agudo 16k</button><button class="mini" data-p="20">🦇 Murciélago 20k</button>
+<label>Lo subo <b id="sv">18</b> kHz</label><input type="range" id="sh" min="10" max="20" step="0.5" value="18">
+<small>Más alto = se oye menos, pero se recorta más de la voz (lo que pase de 24 kHz se pierde).</small></div></section>
+
+<section data-t="💌 Mensaje oculto"><div class="card">
+<div class="tip">¿Qué hace esto? Escribe un texto (o sube una imagen chiquita) y lo convierto en sonido. Al oírlo es como un siseo, pero en el espectrograma aparece tu mensaje dibujado 😍</div>
+<span class="chk"><input type="checkbox" id="useMsg"> Esconder mensaje en el audio final</span>
+<label>Tu mensaje</label><input type="text" id="msg" value="BARBIE" maxlength="40">
+<label>O una imagen (opcional)</label><input type="file" id="img" accept="image/*"> <span class="chk"><input type="checkbox" id="inv"> Invertir colores (si es dibujo oscuro sobre blanco)</span> <button class="mini alt" id="imgX">Quitar imagen</button>
+<label>¿Dónde lo escondo?</label><select id="band"><option value="15000-20000">Arribita, casi no se oye (15–20 kHz)</option><option value="17000-21500">Muy arriba (17–21.5 kHz)</option><option value="8000-16000">Medio (8–16 kHz), se ve mejor</option><option value="500-20000">Todo el espectro, se ve enorme</option></select>
+<label>Duración: <b id="mdurV">3</b> s</label><input type="range" id="mdur" min="1" max="15" step="0.5" value="3">
+<label>Volumen del mensaje: <b id="mvolV">30</b>%</label><input type="range" id="mvol" min="2" max="100" value="30">
+<label>Empieza en el segundo</label><input type="number" id="mpos" value="0" min="0" step="0.5" style="width:80px">
+<br><small>💡 Si también usas 🦇 Ultrasonido, tu audio ya ocupa la zona de 18–24 kHz: esconde el mensaje en «Medio» o «15–20 kHz» para que no se encimen.</small><br><button class="alt" id="msgOnly">💌 Hacer solo el mensaje</button></div></section>
+
+<section data-t="✨ Resultado"><div class="card">
+<div class="tip">¿Qué hace esto? Junta todo en orden: efectos → ritmo → ultrasonido → mensaje oculto. Luego lo oyes, lo descargas y ves su espectrograma.</div>
+<button id="go">✨ Procesar todo</button><button class="alt" id="playR" disabled>▶️ Oír resultado</button><button class="alt" id="playO2" disabled>▶️ Oír original</button><button class="mini alt" id="stop">⏹️ Parar</button><br>
+<button id="dl" disabled>💾 Descargar WAV</button><div id="st"></div>
+<label>Espectrograma (el "dibujo" del sonido: abajo lo grave, arriba lo agudo)</label>
+<select id="sv1"><option value="r">Del resultado</option><option value="o">Del original</option></select>
+<select id="nfft"><option>2048</option><option selected>4096</option></select>
+<select id="scale"><option value="lin">Escala normal</option><option value="log">Escala log (más detalle en lo grave)</option></select>
+<button class="mini" id="drawS">🔍 Dibujar</button><button class="mini alt" id="png">🖼️ Bajar PNG</button>
+<canvas id="cv" width="900" height="480"></canvas></div></section>
+</main>
+<script id="dsp">
+// ===== DSP (se prueba también en node) =====
+function fft(re,im,inv){const n=re.length;for(let i=1,j=0;i<n;i++){let b=n>>1;for(;j&b;b>>=1)j^=b;j^=b;if(i<j){let t=re[i];re[i]=re[j];re[j]=t;t=im[i];im[i]=im[j];im[j]=t;}}
+for(let len=2;len<=n;len<<=1){const a=(inv?2:-2)*Math.PI/len,wr=Math.cos(a),wi=Math.sin(a);for(let i=0;i<n;i+=len){let cr=1,ci=0;for(let k=0;k<len/2;k++){const p=i+k,q=p+len/2,tr=re[q]*cr-im[q]*ci,ti=re[q]*ci+im[q]*cr;re[q]=re[p]-tr;im[q]=im[p]-ti;re[p]+=tr;im[p]+=ti;const t=cr*wr-ci*wi;ci=cr*wi+ci*wr;cr=t;}}}
+if(inv)for(let i=0;i<n;i++){re[i]/=n;im[i]/=n;}}
+function norm(y,p=0.9){let m=0;for(const v of y)m=Math.max(m,Math.abs(v));if(m>0){const g=p/m;for(let i=0;i<y.length;i++)y[i]*=g;}return y;}
+function rng(seed){return()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+function shiftUp(x,sr,shiftHz){let n=1;while(n<x.length)n<<=1;const re=new Float64Array(n),im=new Float64Array(n);re.set(x);fft(re,im,false);
+const h=n/2,s=Math.round(shiftHz*n/sr),lo=Math.round(60*n/sr),R=new Float64Array(n),I=new Float64Array(n);
+for(let k=lo;k<h-s;k++){R[k+s]=re[k];I[k+s]=im[k];}fft(R,I,true);const y=new Float32Array(x.length);for(let i=0;i<x.length;i++)y[i]=2*R[i];norm(y);
+const f=Math.min(2400,y.length>>2);for(let i=0;i<f;i++){const w=i/f;y[i]*=w;y[y.length-1-i]*=w;}return y;}
+// efectos
+function ring(x,sr,f){const y=new Float32Array(x.length);for(let i=0;i<x.length;i++)y[i]=x[i]*Math.sin(2*Math.PI*f*i/sr);return norm(y);}
+function reverse(x){return Float32Array.from(x).reverse();}
+function echo(x,sr,ms,fb){const d=Math.max(1,Math.round(ms*sr/1000)),tail=Math.round(d*Math.log(0.01)/Math.log(Math.max(fb,0.05))),y=new Float32Array(x.length+Math.min(tail,sr*4));
+for(let i=0;i<y.length;i++){y[i]=(i<x.length?x[i]:0)+(i>=d?fb*y[i-d]:0);}return norm(y);}
+function crush(x,bits,down){const q=Math.pow(2,bits-1),y=new Float32Array(x.length);let h=0;for(let i=0;i<x.length;i++){if(i%down===0)h=Math.round(x[i]*q)/q;y[i]=h;}return y;}
+function speed(x,r){const n=Math.floor(x.length/r),y=new Float32Array(n);for(let i=0;i<n;i++){const p=i*r,a=Math.floor(p),f=p-a;y[i]=(x[a]||0)*(1-f)+(x[a+1]||0)*f;}return y;}
+function applyFx(x,sr,list){for(const e of list){if(e.t==='robot')x=ring(x,sr,e.a);else if(e.t==='reverse')x=reverse(x);else if(e.t==='echo')x=echo(x,sr,e.a,e.b);else if(e.t==='crush')x=crush(x,e.a,e.b);else if(e.t==='speed')x=speed(x,e.a);}return x;}
+// ritmo
+const PATS={'44':'1000100010001000','8':'1010101010101010','tresillo':'1001001000101000','morse':'1110101110100000'};
+function pattern(name,seed){if(name==='random'){const r=rng(seed||7);let s='';for(let i=0;i<16;i++)s+=(i%4===0||r()<0.45)?'1':'0';return s;}return PATS[name]||PATS['44'];}
+function peaks(x,sr){const fr=Math.round(sr*0.01),E=[];for(let i=0;i+fr<=x.length;i+=fr){let s=0;for(let j=i;j<i+fr;j++)s+=x[j]*x[j];E.push(Math.sqrt(s/fr));}
+const mx=Math.max(...E,1e-9),out=[];let last=-1e9;for(let k=1;k<E.length;k++){let avg=0,c=0;for(let j=Math.max(0,k-30);j<k;j++){avg+=E[j];c++;}avg/=c;
+if(E[k]>0.15*mx&&E[k]>1.6*avg+1e-6&&E[k]>=E[k-1]&&k-last>12){out.push(k*fr);last=k;}}return out;}
+function gate(x,sr,bpm,patName,duty,seed){const step=60/bpm/4*sr,env=new Float32Array(x.length),rp=Math.round(0.004*sr);
+let starts=[];if(patName==='picos')starts=peaks(x,sr);else{const p=pattern(patName,seed);for(let k=0;k*step<x.length;k++)if(p[k%16]==='1')starts.push(Math.round(k*step));}
+const L=Math.max(2*rp,Math.round(step*duty));for(const s of starts)for(let i=0;i<L&&s+i<x.length;i++){const w=Math.min(1,i/rp,(L-i)/rp);env[s+i]=Math.max(env[s+i],w);}
+const y=new Float32Array(x.length);for(let i=0;i<x.length;i++)y[i]=x[i]*env[i];return y;}
+function tremolo(x,sr,rate,depth){const y=new Float32Array(x.length);for(let i=0;i<x.length;i++)y[i]=x[i]*(1-depth*0.5*(1+Math.sin(2*Math.PI*rate*i/sr)));return y;}
+function chop(x,sr,ms,seed){const L=Math.max(64,Math.round(ms*sr/1000)),n=Math.ceil(x.length/L),r=rng(seed||3),ord=[...Array(n).keys()];
+for(let i=n-1;i>0;i--){const j=Math.floor(r()*(i+1));[ord[i],ord[j]]=[ord[j],ord[i]];}const y=new Float32Array(x.length),rp=Math.min(96,L>>2);let o=0;
+for(const k of ord){const s=k*L,e=Math.min(x.length,s+L);for(let i=s;i<e&&o<y.length;i++,o++){const w=Math.min(1,(i-s)/rp,(e-1-i)/rp);y[o]=x[i]*w;}}return y;}
+function drum(t,sr){const r=rng(t.length*99);if(t==='kick'){const n=Math.round(0.35*sr),y=new Float32Array(n);let ph=0;for(let i=0;i<n;i++){const tt=i/sr,f=50+110*Math.exp(-tt*30);ph+=2*Math.PI*f/sr;y[i]=Math.sin(ph)*Math.exp(-tt*9);}return y;}
+if(t==='hat'){const n=Math.round(0.06*sr),y=new Float32Array(n);let p=0;for(let i=0;i<n;i++){const w=r()*2-1;y[i]=(w-p)*0.5*Math.exp(-i/sr*60);p=w;}return y;}
+const n=Math.round(0.2*sr),y=new Float32Array(n);for(let i=0;i<n;i++){const tt=i/sr,b=tt%0.012<0.012&&tt<0.036?Math.exp(-(tt%0.012)*250):0;y[i]=(r()*2-1)*(0.6*b+0.4*Math.exp(-tt*22)*(tt>=0.024?1:0));}return y;}
+function beats(len,sr,bpm,grid,extraAt){const y=new Float32Array(len),step=60/bpm/4*sr,S={kick:drum('kick',sr),hat:drum('hat',sr),clap:drum('clap',sr)},G={kick:0.9,hat:0.35,clap:0.5};
+const add=(s,pos,g)=>{for(let i=0;i<s.length&&pos+i<len;i++)y[pos+i]+=s[i]*g;};
+for(let k=0;k*step<len;k++)for(const t of ['kick','hat','clap'])if(grid[t][k%16])add(S[t],Math.round(k*step),G[t]);
+for(const p of (extraAt||[]))add(S.kick,p,0.8);return y;}
+function mix(a,b,gb){const n=Math.max(a.length,b.length),y=new Float32Array(n);for(let i=0;i<n;i++)y[i]=(a[i]||0)+(b[i]||0)*gb;let m=0;for(const v of y)m=Math.max(m,Math.abs(v));if(m>0.99)norm(y,0.95);return y;}
+// mensaje oculto: fuente 5x7
+const FONT={A:'01110100011000111111100011000110001',B:'11110100011000111110100011000111110',C:'01110100011000010000100001000101110',D:'11110100011000110001100011000111110',E:'11111100001000011110100001000011111',F:'11111100001000011110100001000010000',G:'01110100011000010111100011000101111',H:'10001100011000111111100011000110001',I:'01110001000010000100001000010001110',J:'00111000100001000010000101001001100',K:'10001100101010011000101001001010001',L:'10000100001000010000100001000011111',M:'10001110111010110101100011000110001',N:'10001100011100110101100111000110001',O:'01110100011000110001100011000101110',P:'11110100011000111110100001000010000',Q:'01110100011000110001101011001001101',R:'11110100011000111110101001001010001',S:'01111100001000001110000010000111110',T:'11111001000010000100001000010000100',U:'10001100011000110001100011000101110',V:'10001100011000110001100010101000100',W:'10001100011000110101101011010101010',X:'10001100010101000100010101000110001',Y:'10001100010101000100001000010000100',Z:'11111000010001000100010001000011111',
+'0':'01110100011001110101110011000101110','1':'00100011000010000100001000010001110','2':'01110100010000100010001000100011111','3':'11110000010000101110000010000111110','4':'00010001100101010010111110001000010','5':'11111100001111000001000011000101110','6':'00110010001000011110100011000101110','7':'11111000010001000100010000100001000','8':'01110100011000101110100011000101110','9':'01110100011000101111000010001001100',
+'!':'00100001000010000100001000000000100','?':'01110100010000100010001000000000100','.':'00000000000000000000000000110001100',',':'00000000000000000000001100010001000','-':'00000000000000011111000000000000000',':':'00000011000110000000011000110000000','♥':'00000010101111111111011100010000000',' ':'00000000000000000000000000000000000'};
+function textMatrix(text,vs){vs=vs||4;const t=text.toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/<3/g,'♥');const cols=[];
+const pushCol=v=>{cols.push(v);cols.push(v);};pushCol(new Array(7).fill(0));
+for(const ch of t){const g=FONT[ch]||FONT['?'];for(let c=0;c<5;c++){const v=[];for(let r=0;r<7;r++)v.push(+g[r*5+c]);pushCol(v);}pushCol(new Array(7).fill(0));}
+const R=7*vs+2,M=[];for(let r=0;r<R;r++){const row=new Float32Array(cols.length);const fr=r-1;if(fr>=0&&fr<7*vs){const gr=Math.floor(fr/vs);for(let c=0;c<cols.length;c++)row[c]=cols[c][gr];}M.push(row);}return M;}
+function synthMatrix(M,sr,fLo,fHi,dur,vol){const N=Math.round(dur*sr),nR=M.length,nC=M[0].length,y=new Float32Array(N),r=rng(11);
+for(let k=0;k<nR;k++){const row=M[k];if(!row.some(v=>v>0.02))continue;const f=fHi-(fHi-fLo)*k/Math.max(1,nR-1),w=2*Math.PI*f/sr,ph=r()*6.283;
+for(let i=0;i<N;i++){const c=i/N*nC-0.5,a=Math.max(0,Math.floor(c)),b=Math.min(nC-1,a+1),fr=Math.min(1,Math.max(0,c-a)),amp=row[a]*(1-fr)+row[b]*fr;if(amp>0.001)y[i]+=amp*Math.sin(w*i+ph);}}
+norm(y,vol);const e=Math.min(480,N>>3);for(let i=0;i<e;i++){y[i]*=i/e;y[N-1-i]*=i/e;}return y;}
+function mixAt(base,msg,pos){const n=Math.max(base.length,pos+msg.length),y=new Float32Array(n);y.set(base);for(let i=0;i<msg.length;i++)y[pos+i]+=msg[i];let m=0;for(const v of y)m=Math.max(m,Math.abs(v));if(m>0.99)norm(y,0.95);return y;}
+function wav(y,sr){const b=new ArrayBuffer(44+y.length*2),v=new DataView(b),w=(o,s)=>{for(let i=0;i<s.length;i++)v.setUint8(o+i,s.charCodeAt(i))};
+w(0,'RIFF');v.setUint32(4,36+y.length*2,true);w(8,'WAVEfmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,sr,true);v.setUint32(28,sr*2,true);v.setUint16(32,2,true);v.setUint16(34,16,true);w(36,'data');v.setUint32(40,y.length*2,true);
+for(let i=0;i<y.length;i++)v.setInt16(44+i*2,Math.max(-1,Math.min(1,y[i]))*32767,true);return b;}
+function demoVoice(sr,sec){const N=Math.round(sr*sec),x=new Float32Array(N);let ph=0;for(let i=0;i<N;i++){const t=i/sr,f0=180+30*Math.sin(2*Math.PI*1.3*t),syl=0.5+0.5*Math.sin(2*Math.PI*3*t);ph+=2*Math.PI*f0/sr;for(let h=1;h<=18;h++)x[i]+=Math.sin(ph*h)/h*0.08*syl;}return x;}
+if(typeof module!=='undefined')module.exports={fft,shiftUp,ring,reverse,echo,crush,speed,applyFx,pattern,peaks,gate,tremolo,chop,drum,beats,mix,textMatrix,synthMatrix,mixAt,wav,demoVoice};
+</script>
+<script>
+const SR=48000,$=id=>document.getElementById(id);let ctx,orig=null,res=null,blobUrl,src,imgM=null;
+// pestañas
+const secs=[...document.querySelectorAll('section')];secs.forEach((s,i)=>{const b=document.createElement('button');b.textContent=s.dataset.t;b.onclick=()=>{secs.forEach(z=>z.classList.remove('on'));document.querySelectorAll('#tabs button').forEach(z=>z.classList.remove('on'));s.classList.add('on');b.classList.add('on');};$('tabs').appendChild(b);if(!i)b.click();});
+function C(){if(!ctx)ctx=new AudioContext({sampleRate:SR});ctx.resume();return ctx;}
+const say=t=>$('st').textContent=t;
+function setOrig(x){orig=x;if(orig.length>SR*180){orig=orig.slice(0,SR*180);alert('Lo recorté a 3 minutos para que no se trabe 😉');}$('playO').disabled=$('playO2').disabled=false;say('¡Listo! Audio cargado ('+(orig.length/SR).toFixed(1)+' s) 💖 Ahora ve a las otras pestañas.');}
+async function load(buf){const d=await C().decodeAudioData(buf);const oc=new OfflineAudioContext(1,Math.ceil(d.duration*SR),SR);const s=oc.createBufferSource();s.buffer=d;s.connect(oc.destination);s.start();setOrig((await oc.startRendering()).getChannelData(0).slice());}
+$('f').onchange=async e=>{const fl=e.target.files[0];if(fl)try{await load(await fl.arrayBuffer());}catch(err){say('No pude abrir ese audio 😢 prueba con mp3, wav o m4a');}};
+$('demo').onclick=()=>setOrig(demoVoice(SR,4));
+let mr;$('rec').onclick=async()=>{if(mr&&mr.state==='recording'){mr.stop();return;}try{const st=await navigator.mediaDevices.getUserMedia({audio:true});mr=new MediaRecorder(st);const ch=[];mr.ondataavailable=e=>ch.push(e.data);
+mr.onstop=async()=>{st.getTracks().forEach(t=>t.stop());$('rec').textContent='🎙️ Grabar';load(await new Blob(ch).arrayBuffer());};mr.start();$('rec').textContent='⏹️ Parar grabación';say('Grabando… 🎤');}catch(e){say('No me dejó usar el micrófono 😢');}};
+function play(x){if(!x)return;C();stop();const b=ctx.createBuffer(1,x.length,SR);b.copyToChannel(x,0);src=ctx.createBufferSource();src.buffer=b;src.connect(ctx.destination);src.start();}
+function stop(){if(src)try{src.stop()}catch(e){}}
+$('playO').onclick=$('playO2').onclick=()=>play(orig);$('playR').onclick=()=>play(res);$('stop').onclick=stop;
+// sliders
+[['bpm','bpmV'],['duty','dutyV'],['bvol','bvolV'],['sh','sv'],['mdur','mdurV'],['mvol','mvolV']].forEach(([a,b])=>$(a).oninput=()=>$(b).textContent=$(a).value);
+document.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{$('sh').value=b.dataset.p;$('sv').textContent=b.dataset.p;$('useShift').checked=true;});
+// efectos en cadena
+const FXD={robot:['🤖 Robot',60,0,'Hz',20,400],echo:['🏔️ Eco',300,0.45,'ms',50,1000],crush:['👾 Videojuego',6,4,'bits',2,12],speed:['⏩ Velocidad',1.5,0,'x',0.5,2],reverse:['🔄 Al revés']};let fxList=[];
+function renderFx(){$('fx').innerHTML='';fxList.forEach((e,i)=>{const li=document.createElement('li'),d=FXD[e.t];li.innerHTML='<b>'+d[0]+'</b> ';
+if(d[1]!==undefined){const n=document.createElement('input');n.type='number';n.step='any';n.min=d[4];n.max=d[5];n.value=e.a;n.style.width='70px';n.onchange=()=>e.a=+n.value;li.append(n,' '+d[3]+' ');}
+const up=document.createElement('button');up.className='mini alt';up.textContent='⬆️';up.onclick=()=>{if(i){[fxList[i-1],fxList[i]]=[fxList[i],fxList[i-1]];renderFx();}};
+const x=document.createElement('button');x.className='mini';x.textContent='✖';x.onclick=()=>{fxList.splice(i,1);renderFx();};li.append(up,x);$('fx').appendChild(li);});
+if(!fxList.length)$('fx').innerHTML='<small>Todavía no hay efectos. Elige uno y dale ➕</small>';}
+$('fxAdd').onclick=()=>{const t=$('fxSel').value,d=FXD[t];fxList.push({t,a:d[1],b:d[2]});renderFx();};renderFx();
+// secuenciador
+const grid={kick:Array(16).fill(0),hat:Array(16).fill(0),clap:Array(16).fill(0)};[0,8].forEach(i=>grid.kick[i]=1);[4,12].forEach(i=>grid.clap[i]=1);for(let i=0;i<16;i+=2)grid.hat[i]=1;
+const NAMES={kick:'Bombo',hat:'Platillo',clap:'Aplauso'};for(const t in grid){const l=document.createElement('span');l.textContent=NAMES[t];$('grid').appendChild(l);
+for(let i=0;i<16;i++){const c=document.createElement('button');c.className='cell'+(Math.floor(i/4)%2?' b':'')+(grid[t][i]?' on':'');c.onclick=()=>{grid[t][i]^=1;c.classList.toggle('on');};$('grid').appendChild(c);}}
+$('beatPlay').onclick=()=>play(norm(beats(Math.round(SR*60/$('bpm').value*4*2),SR,+$('bpm').value,grid,[]),0.8));
+// imagen
+$('img').onchange=e=>{const fl=e.target.files[0];if(!fl)return;const im=new Image();im.onload=()=>{const H=48,W=Math.max(8,Math.min(240,Math.round(im.width*H/im.height))),c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');g.drawImage(im,0,0,W,H);
+const d=g.getImageData(0,0,W,H).data;imgM=[];for(let r=0;r<H;r++){const row=new Float32Array(W);for(let k=0;k<W;k++){const p=(r*W+k)*4;let v=(0.3*d[p]+0.59*d[p+1]+0.11*d[p+2])/255*(d[p+3]/255);if($('inv').checked)v=1-v;row[k]=v*v;}imgM.push(row);}say('Imagen lista 🖼️ ('+W+'×'+H+')');};im.src=URL.createObjectURL(fl);};
+$('imgX').onclick=()=>{imgM=null;$('img').value='';say('Uso el texto otra vez ✍️');};
+function makeMsg(){const [lo,hi]=$('band').value.split('-').map(Number);const M=imgM||textMatrix($('msg').value||'HOLA',4);return synthMatrix(M,SR,lo,hi,+$('mdur').value,$('mvol').value/100);}
+// pipeline
+function done(t){if(blobUrl)URL.revokeObjectURL(blobUrl);blobUrl=URL.createObjectURL(new Blob([wav(res,SR)],{type:'audio/wav'}));$('playR').disabled=$('dl').disabled=false;$('sv1').value='r';drawSpec();say(t);}
+$('go').onclick=()=>{say('Procesando… ⏳ (si el audio es largo tarda tantito)');setTimeout(()=>{try{
+if(!orig&&!$('useMsg').checked){say('Primero carga un audio en 🎧 o prende el mensaje oculto 💌');return;}
+let x=orig?Float32Array.from(orig):new Float32Array(0);const steps=[];
+if(x.length&&$('useFx').checked&&fxList.length){x=applyFx(x,SR,fxList);steps.push('efectos');}
+if(x.length){const bpm=+$('bpm').value;const pk=$('beatPeaks').checked?peaks(x,SR):[];
+if($('useGate').checked){x=gate(x,SR,bpm,$('pat').value,$('duty').value/100,Date.now()%1000);steps.push('pulsos');}
+if($('useTrem').checked){x=tremolo(x,SR,+$('tremR').value,0.9);steps.push('tremolo');}
+if($('useChop').checked){x=chop(x,SR,+$('chopMs').value,Date.now()%997);steps.push('picadito');}
+if($('useBeat').checked||pk.length){const g=$('useBeat').checked?grid:{kick:[],hat:[],clap:[]};x=mix(norm(x,0.8),beats(x.length,SR,bpm,g,pk),$('bvol').value/100);steps.push('batería');}
+if($('useShift').checked){x=shiftUp(x,SR,$('sh').value*1000);steps.push('ultrasonido +'+$('sh').value+' kHz');}}
+if($('useMsg').checked){x=mixAt(x,makeMsg(),Math.round(+$('mpos').value*SR));steps.push('mensaje oculto');}
+res=x;done('¡Ya quedó! 🦇 Pasos: '+(steps.join(' → ')||'ninguno (igual al original)'));}catch(e){say('Uy, algo falló: '+e.message);}},50);};
+$('msgOnly').onclick=()=>{say('Dibujando tu mensaje en sonido… ✍️');setTimeout(()=>{res=makeMsg();done('¡Mensaje listo! 💌 Míralo abajo en la pestaña ✨ Resultado');},30);};
+$('dl').onclick=()=>{const a=document.createElement('a');a.href=blobUrl;a.download='ultrasonido2.wav';a.click();};
+// espectrograma
+function drawSpec(){const x=$('sv1').value==='o'?orig:res,c=$('cv'),g=c.getContext('2d');g.fillStyle='#2a0f22';g.fillRect(0,0,c.width,c.height);if(!x||!x.length)return;
+const n=+$('nfft').value,lg=$('scale').value==='log',L=40,W=c.width-L,H=c.height-20,img=g.createImageData(W,H),win=new Float32Array(n);for(let i=0;i<n;i++)win[i]=0.5-0.5*Math.cos(2*Math.PI*i/n);
+const cols=[];let mx=-1e9;const re=new Float64Array(n),im=new Float64Array(n);
+for(let k=0;k<W;k++){const s=Math.floor(k*Math.max(0,x.length-n)/(W-1));for(let i=0;i<n;i++){re[i]=(x[s+i]||0)*win[i];im[i]=0;}fft(re,im,false);const m=new Float32Array(n/2);for(let b=0;b<n/2;b++){m[b]=10*Math.log10(re[b]*re[b]+im[b]*im[b]+1e-12);if(m[b]>mx)mx=m[b];}cols.push(m);}
+const fy=y=>{const t=1-y/H;return lg?50*Math.pow((SR/2)/50,t):t*SR/2;};
+for(let y=0;y<H;y++){const b=Math.min(n/2-1,Math.round(fy(y)/SR*n));for(let k=0;k<W;k++){const v=Math.max(0,Math.min(1,(cols[k][b]-mx+80)/80)),p=(y*W+k)*4;
+img.data[p]=Math.min(255,v*2*255);img.data[p+1]=Math.max(0,(v-0.5)*2)*255;img.data[p+2]=Math.min(255,60+v*200);img.data[p+3]=255;}}
+g.putImageData(img,L,0);g.fillStyle='#ffd6ec';g.font='12px sans-serif';for(const f of (lg?[100,1000,5000,10000,20000]:[0,4000,8000,12000,16000,20000,24000])){const t=lg?Math.log(f/50)/Math.log(SR/2/50):f/(SR/2),y=(1-t)*H;g.fillText((f/1000)+'k',2,Math.max(10,Math.min(H,y+4)));g.fillRect(L-4,y,4,1);}
+g.fillText('0 s',L,H+15);g.fillText((x.length/SR).toFixed(1)+' s',c.width-40,H+15);}
+$('drawS').onclick=drawSpec;['sv1','nfft','scale'].forEach(i=>$(i).onchange=drawSpec);
+$('png').onclick=()=>{const a=document.createElement('a');a.href=$('cv').toDataURL('image/png');a.download='espectrograma.png';a.click();};
+drawSpec();
+</script></body></html>
