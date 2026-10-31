@@ -1,0 +1,63 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ultrasonido 🦇 Audio escondido en lo agudo</title>
+<style>
+body{font-family:system-ui,sans-serif;background:linear-gradient(#ffe4f1,#fff);margin:0;color:#5a2a48}
+main{max-width:680px;margin:auto;padding:16px}h1{text-align:center;color:#d6338a}
+.card{background:#fff;border-radius:18px;padding:14px;margin:12px 0;box-shadow:0 4px 14px #f5a3c955}
+button{background:#e64c9c;color:#fff;border:0;border-radius:24px;padding:12px 18px;font-size:17px;margin:6px 4px 0 0;cursor:pointer}
+button.alt{background:#a66cd6}button:disabled{opacity:.4}
+.aviso{background:#fff0f7;border:2px dashed #e64c9c;border-radius:14px;padding:12px;font-size:15px}
+input[type=range]{width:100%;accent-color:#e64c9c}canvas{width:100%;height:220px;background:#2a0f22;border-radius:12px}
+#st{font-weight:bold;color:#d6338a;min-height:22px}
+</style></head><body><main>
+<h1>🦇 Ultrasonido</h1>
+<p style="text-align:center">Sube un audio o grábate, y lo mandamos hasta arriba, a lo súper agudo, donde casi nadie lo oye… pero el espectrograma sí lo ve 👀</p>
+<div class="aviso">💡 <b>Ojo, la neta:</b> el ultrasonido "de verdad" empieza arriba de 20 kHz. Casi todas las bocinas y micrófonos de celular o laptop llegan más o menos a 20 kHz, y el audio digital a 48 000 Hz solo alcanza hasta 24 kHz. Así que esto hace sonido <b>casi ultrasónico</b> (agudísimo, apenas se oye), no ultrasonido de laboratorio.<br>
+🎯 <b>¿Para qué sirve?</b> Para esconder un sonido en frecuencias que casi no se oyen pero que un espectrograma revela, como los sonidos ocultos que investigamos.<br>
+🔈 Bájale al volumen antes de darle play: a algunas personas (y a los perritos 🐶) les molesta lo agudo.</div>
+<div class="card"><b>1. Tu audio</b><br>
+<input type="file" id="f" accept="audio/*"> <br>
+<button class="alt" id="rec">🎙️ Grabar</button><button class="alt" id="playO" disabled>▶️ Oír original</button></div>
+<div class="card"><b>2. ¿Qué tan arriba lo mando?</b> Lo subo <b id="sv">18</b> kHz<br>
+<input type="range" id="sh" min="14" max="20" step="0.5" value="18">
+<small>Más alto = se oye menos, pero se recorta más de la voz (todo lo que pase de 24 kHz se pierde).</small><br>
+<button id="go" disabled>🦇 Convertir a ultrasonido</button></div>
+<div class="card"><b>3. Resultado</b><br>
+<button id="playR" disabled>▶️ Oír resultado</button><button class="alt" id="dl" disabled>💾 Descargar WAV</button>
+<div id="st"></div><canvas id="cv" width="680" height="220"></canvas>
+<small>Espectrograma en vivo: abajo lo grave, arriba lo agudo (hasta 24 kHz). La línea rosa marca 18 kHz.</small></div>
+</main>
+<script id="dsp">
+// DSP: desplazamiento de frecuencia por banda lateral única (SSB) vía FFT
+function fft(re,im,inv){const n=re.length;for(let i=1,j=0;i<n;i++){let b=n>>1;for(;j&b;b>>=1)j^=b;j^=b;if(i<j){[re[i],re[j]]=[re[j],re[i]];[im[i],im[j]]=[im[j],im[i]];}}
+for(let len=2;len<=n;len<<=1){const a=(inv?2:-2)*Math.PI/len,wr=Math.cos(a),wi=Math.sin(a);for(let i=0;i<n;i+=len){let cr=1,ci=0;for(let k=0;k<len/2;k++){const p=i+k,q=p+len/2,tr=re[q]*cr-im[q]*ci,ti=re[q]*ci+im[q]*cr;re[q]=re[p]-tr;im[q]=im[p]-ti;re[p]+=tr;im[p]+=ti;const t=cr*wr-ci*wi;ci=cr*wi+ci*wr;cr=t;}}}
+if(inv)for(let i=0;i<n;i++){re[i]/=n;im[i]/=n;}}
+function shiftUp(x,sr,shiftHz){let n=1;while(n<x.length)n<<=1;const re=new Float64Array(n),im=new Float64Array(n);re.set(x);fft(re,im,false);
+const h=n/2,s=Math.round(shiftHz*n/sr),lo=Math.round(60*n/sr),R=new Float64Array(n),I=new Float64Array(n);
+for(let k=lo;k<h-s;k++){R[k+s]=re[k];I[k+s]=im[k];}
+fft(R,I,true);const y=new Float32Array(x.length);let m=0;for(let i=0;i<x.length;i++){y[i]=2*R[i];m=Math.max(m,Math.abs(y[i]));}
+if(m>0){const g=0.9/m;for(let i=0;i<y.length;i++)y[i]*=g;}
+const f=Math.min(2400,y.length>>2);for(let i=0;i<f;i++){const w=i/f;y[i]*=w;y[y.length-1-i]*=w;}return y;}
+function wav(y,sr){const b=new ArrayBuffer(44+y.length*2),v=new DataView(b),w=(o,s)=>{for(let i=0;i<s.length;i++)v.setUint8(o+i,s.charCodeAt(i))};
+w(0,'RIFF');v.setUint32(4,36+y.length*2,true);w(8,'WAVEfmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,sr,true);v.setUint32(28,sr*2,true);v.setUint16(32,2,true);v.setUint16(34,16,true);w(36,'data');v.setUint32(40,y.length*2,true);
+for(let i=0;i<y.length;i++)v.setInt16(44+i*2,Math.max(-1,Math.min(1,y[i]))*32767,true);return b;}
+if(typeof module!=='undefined')module.exports={shiftUp,wav};
+</script>
+<script>
+const SR=48000,$=id=>document.getElementById(id);let ctx,orig,res,blobUrl,an,src;
+function C(){if(!ctx){ctx=new AudioContext({sampleRate:SR});an=ctx.createAnalyser();an.fftSize=2048;an.connect(ctx.destination);draw();}return ctx;}
+async function load(buf){const d=await C().decodeAudioData(buf);const oc=new OfflineAudioContext(1,Math.ceil(d.duration*SR),SR);const s=oc.createBufferSource();s.buffer=d;s.connect(oc.destination);s.start();orig=(await oc.startRendering()).getChannelData(0);
+if(orig.length>SR*180){orig=orig.slice(0,SR*180);$('st').textContent='Lo recorté a 3 minutos para que no se trabe 😉';}else $('st').textContent='¡Listo! Audio cargado ('+(orig.length/SR).toFixed(1)+' s) 💖';$('playO').disabled=$('go').disabled=false;}
+$('f').onchange=async e=>{const fl=e.target.files[0];if(fl)load(await fl.arrayBuffer());};
+let mr;$('rec').onclick=async()=>{if(mr&&mr.state==='recording'){mr.stop();return;}try{const st=await navigator.mediaDevices.getUserMedia({audio:true});mr=new MediaRecorder(st);const ch=[];mr.ondataavailable=e=>ch.push(e.data);
+mr.onstop=async()=>{st.getTracks().forEach(t=>t.stop());$('rec').textContent='🎙️ Grabar';load(await new Blob(ch).arrayBuffer());};mr.start();$('rec').textContent='⏹️ Parar grabación';$('st').textContent='Grabando… 🎤';}catch(e){$('st').textContent='No me dejó usar el micrófono 😢';}};
+function play(x){C().resume();if(src)try{src.stop()}catch(e){}const b=ctx.createBuffer(1,x.length,SR);b.copyToChannel(x,0);src=ctx.createBufferSource();src.buffer=b;src.connect(an);src.start();}
+$('playO').onclick=()=>play(orig);$('playR').onclick=()=>play(res);
+$('sh').oninput=()=>$('sv').textContent=$('sh').value;
+$('go').onclick=()=>{$('st').textContent='Convirtiendo… ⏳';setTimeout(()=>{res=shiftUp(orig,SR,$('sh').value*1000);if(blobUrl)URL.revokeObjectURL(blobUrl);blobUrl=URL.createObjectURL(new Blob([wav(res,SR)],{type:'audio/wav'}));
+$('playR').disabled=$('dl').disabled=false;$('st').textContent='¡Ya quedó! 🦇 Tu audio ahora vive entre '+$('sh').value+' y 24 kHz';},50);};
+$('dl').onclick=()=>{const a=document.createElement('a');a.href=blobUrl;a.download='ultrasonido.wav';a.click();};
+function draw(){const c=$('cv'),g=c.getContext('2d'),d=new Uint8Array(an.frequencyBinCount);(function f(){requestAnimationFrame(f);an.getByteFrequencyData(d);g.drawImage(c,-2,0);
+for(let y=0;y<c.height;y++){const v=d[Math.floor((1-y/c.height)*d.length)]||0;g.fillStyle=`rgb(${v},${v*0.3},${v*0.7})`;g.fillRect(c.width-2,y,2,1);}
+g.fillStyle='#ff69b4';g.fillRect(c.width-2,c.height*(1-18/24),2,1);})();}
+</script></body></html>
